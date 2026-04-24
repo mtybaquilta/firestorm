@@ -1,0 +1,16 @@
+# Multipliers: 1.0 = neutral, 0.5 = resisted, 1.5 = weak, 0 = immune.
+# Rows = damage type; columns = resistance class.
+resistanceClasses: [light, heavy, magical]
+damageTypes:
+  physical:
+    light: 1.0
+    heavy: 0.5
+    magical: 1.0
+  magic:
+    light: 1.0
+    heavy: 1.0
+    magical: 0.5
+  true:
+    light: 1.0
+    heavy: 1.0
+    magical: 1.0

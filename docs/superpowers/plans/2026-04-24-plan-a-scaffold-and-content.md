@@ -15,6 +15,7 @@
 ## File map
 
 **Created in this plan:**
+
 - `package.json`, `tsconfig.json`, `next.config.ts`, `.eslintrc.json` (or `eslint.config.mjs`), `.prettierrc.json`, `.gitignore`, `.env.example`, `vitest.config.ts`
 - `src/app/layout.tsx`, `src/app/page.tsx`, `src/app/play/page.tsx` (placeholder)
 - `src/lib/supabase/server.ts`, `src/lib/supabase/browser.ts`, `src/lib/supabase/types.ts`
@@ -41,6 +42,7 @@
 - `.github/workflows/ci.yml`
 
 **Modified:**
+
 - `README.md` — add a "Getting started" section.
 
 Why this layout: schemas are split one-per-file because we'll touch them frequently in isolation (tower schema changes when adding upgrades, creep schema changes when adding abilities, etc.). Loader/registry are split because the loader is pure I/O and the registry is pure indexing — easier to unit-test independently.
@@ -52,6 +54,7 @@ Why this layout: schemas are split one-per-file because we'll touch them frequen
 ### Task 1: Initialize Next.js + TypeScript project
 
 **Files:**
+
 - Create: `package.json`, `tsconfig.json`, `next.config.ts`, `.gitignore`, `src/app/layout.tsx`, `src/app/page.tsx`, `eslint.config.mjs`, `next-env.d.ts`, `postcss.config.mjs`, `app/globals.css` (whatever the generator produces).
 
 - [ ] **Step 1: Run the Next.js generator into the current repo**
@@ -94,6 +97,7 @@ git commit -m "FS-4: scaffold Next.js + TypeScript app"
 ### Task 2: Add runtime dependencies
 
 **Files:**
+
 - Modify: `package.json`
 
 - [ ] **Step 1: Install runtime deps**
@@ -124,6 +128,7 @@ git commit -m "FS-4: add runtime + dev dependencies"
 ### Task 3: Configure Vitest with a smoke test
 
 **Files:**
+
 - Create: `vitest.config.ts`, `src/lib/__tests__/smoke.test.ts`
 - Modify: `package.json` (add `test`, `test:watch` scripts)
 
@@ -188,6 +193,7 @@ git commit -m "FS-4: configure Vitest with smoke test"
 ### Task 4: Configure Prettier
 
 **Files:**
+
 - Create: `.prettierrc.json`, `.prettierignore`
 - Modify: `package.json` (add `format`, `format:check` scripts)
 
@@ -243,6 +249,7 @@ git commit -m "FS-4: configure Prettier"
 ### Task 5: Environment variables
 
 **Files:**
+
 - Create: `.env.example`, `src/lib/env.ts`
 - Modify: `.gitignore` (confirm `.env*.local` is ignored — Next's generator already does this; verify only)
 
@@ -305,6 +312,7 @@ git commit -m "FS-4: add env schema and example"
 ### Task 6: Supabase client modules
 
 **Files:**
+
 - Create: `src/lib/supabase/types.ts`, `src/lib/supabase/browser.ts`, `src/lib/supabase/server.ts`
 
 - [ ] **Step 1: Write `src/lib/supabase/types.ts`**
@@ -385,6 +393,7 @@ git commit -m "FS-4: add Supabase server + browser client modules"
 ### Task 7: Placeholder `/play` route
 
 **Files:**
+
 - Create: `src/app/play/page.tsx`
 
 - [ ] **Step 1: Write the placeholder page**
@@ -429,6 +438,7 @@ For all schema tasks the discipline is the same:
 ### Task 8: Damage-types schema + fixture
 
 **Files:**
+
 - Create: `src/content-loader/schemas/damage-types.ts`
 - Create: `content/damage-types.yaml`
 - Create: `src/content-loader/__tests__/damage-types.test.ts`
@@ -543,6 +553,7 @@ git commit -m "FS-4: add damage-types schema and fixture"
 ### Task 9: Tower schema + fixture
 
 **Files:**
+
 - Create: `src/content-loader/schemas/tower.ts`
 - Create: `content/towers/sample-arrow.yaml`
 - Create: `src/content-loader/__tests__/tower.test.ts`
@@ -557,11 +568,11 @@ damageType: physical
 targetableLayers: [ground]
 baseStats:
   damage: 10
-  attackSpeed: 1.0       # attacks per second
-  range: 150             # pixels
+  attackSpeed: 1.0 # attacks per second
+  range: 150 # pixels
   projectileBehavior: single-target
 targetingDefaults:
-  priority: first        # first | last | strong | close
+  priority: first # first | last | strong | close
 upgrades:
   - id: arrow-1
     requires: []
@@ -707,6 +718,7 @@ git commit -m "FS-4: add tower schema and fixture"
 ### Task 10: Creep schema + fixture
 
 **Files:**
+
 - Create: `src/content-loader/schemas/creep.ts`
 - Create: `content/creeps/sample-scout.yaml`
 - Create: `src/content-loader/__tests__/creep.test.ts`
@@ -717,7 +729,7 @@ git commit -m "FS-4: add tower schema and fixture"
 id: scout
 name: Scout
 hp: 50
-speed: 80           # pixels per second
+speed: 80 # pixels per second
 movementLayer: ground
 resistanceClass: light
 bounty: 5
@@ -839,6 +851,7 @@ git commit -m "FS-4: add creep schema and fixture"
 ### Task 11: Wave schema + fixtures
 
 **Files:**
+
 - Create: `src/content-loader/schemas/wave.ts`
 - Create: `content/maps/in-the-loop/waves-easy.yaml`, `content/maps/in-the-loop/waves-hard.yaml`
 - Create: `content/maps/logs/waves-easy.yaml`, `content/maps/logs/waves-hard.yaml`
@@ -953,6 +966,7 @@ git commit -m "FS-4: add wave schema and fixtures"
 ### Task 12: Map schema + fixtures
 
 **Files:**
+
 - Create: `src/content-loader/schemas/map.ts`
 - Create: `content/maps/in-the-loop/map.yaml`, `content/maps/logs/map.yaml`
 - Create: `src/content-loader/__tests__/map.test.ts`
@@ -967,10 +981,10 @@ name: In The Loop
 background: /assets/maps/in-the-loop/background.webp
 placementMask: /assets/maps/in-the-loop/mask.png
 path:
-  - { x: 0,    y: 100 }
-  - { x: 200,  y: 100 }
-  - { x: 200,  y: 300 }
-  - { x: 800,  y: 300 }
+  - { x: 0, y: 100 }
+  - { x: 200, y: 100 }
+  - { x: 200, y: 300 }
+  - { x: 800, y: 300 }
 difficulty:
   easy:
     startCash: 650
@@ -990,10 +1004,10 @@ name: Logs
 background: /assets/maps/logs/background.webp
 placementMask: /assets/maps/logs/mask.png
 path:
-  - { x: 0,    y: 200 }
-  - { x: 400,  y: 200 }
-  - { x: 400,  y: 500 }
-  - { x: 800,  y: 500 }
+  - { x: 0, y: 200 }
+  - { x: 400, y: 200 }
+  - { x: 400, y: 500 }
+  - { x: 800, y: 500 }
 difficulty:
   easy:
     startCash: 650
@@ -1019,14 +1033,14 @@ function load(file: string) {
 }
 
 describe('MapSchema', () => {
-  it.each([
-    'content/maps/in-the-loop/map.yaml',
-    'content/maps/logs/map.yaml',
-  ])('parses %s', (file) => {
-    const map = MapSchema.parse(load(file));
-    expect(map.path.length).toBeGreaterThanOrEqual(2);
-    expect(map.difficulty.easy.startLives).toBeGreaterThan(0);
-  });
+  it.each(['content/maps/in-the-loop/map.yaml', 'content/maps/logs/map.yaml'])(
+    'parses %s',
+    (file) => {
+      const map = MapSchema.parse(load(file));
+      expect(map.path.length).toBeGreaterThanOrEqual(2);
+      expect(map.difficulty.easy.startLives).toBeGreaterThan(0);
+    },
+  );
 
   it('rejects a path with fewer than 2 points', () => {
     expect(() =>
@@ -1104,6 +1118,7 @@ git commit -m "FS-4: add map schema and fixtures"
 ### Task 13: Schema barrel + content loader
 
 **Files:**
+
 - Create: `src/content-loader/schemas/index.ts`, `src/content-loader/load.ts`, `src/content-loader/__tests__/load.test.ts`
 
 - [ ] **Step 1: Write `src/content-loader/schemas/index.ts`**
@@ -1183,10 +1198,7 @@ async function readYaml(file: string): Promise<unknown> {
   return yaml.load(await readFile(file, 'utf8'));
 }
 
-async function readDirYaml<T>(
-  dir: string,
-  parse: (raw: unknown, file: string) => T,
-): Promise<T[]> {
+async function readDirYaml<T>(dir: string, parse: (raw: unknown, file: string) => T): Promise<T[]> {
   const entries = await readdir(dir, { withFileTypes: true });
   const files = entries
     .filter((e) => e.isFile() && e.name.endsWith('.yaml'))
@@ -1259,6 +1271,7 @@ git commit -m "FS-4: add content loader"
 ### Task 14: Cross-reference registry
 
 **Files:**
+
 - Create: `src/content-loader/registry.ts`, `src/content-loader/__tests__/registry.test.ts`
 
 The registry indexes loaded content by id and validates cross-references that span files: every tower's `damageType` must exist in the damage-types matrix; every creep's `resistanceClass` must exist; every wave group's `creep` must reference a known creep; every creep ability with `spawnOnDeath` must reference a known creep.
@@ -1405,6 +1418,7 @@ git commit -m "FS-4: add content registry with cross-reference validation"
 ### Task 15: `validate-content` CLI script
 
 **Files:**
+
 - Create: `scripts/validate-content.ts`
 - Modify: `package.json` (add `validate-content` script)
 
@@ -1469,6 +1483,7 @@ git commit -m "FS-4: add validate-content CLI script"
 ### Task 16: GitHub Actions CI
 
 **Files:**
+
 - Create: `.github/workflows/ci.yml`
 
 - [ ] **Step 1: Write `.github/workflows/ci.yml`**
@@ -1516,12 +1531,12 @@ All must exit 0.
 ### Task 17: README — getting started
 
 **Files:**
+
 - Modify: `README.md`
 
 - [ ] **Step 1: Append a "Getting started" section at the end of `README.md`**
 
-```markdown
-
+````markdown
 ## Getting started
 
 ```bash
@@ -1529,20 +1544,22 @@ npm install
 cp .env.example .env.local   # fill in Supabase keys when you have them
 npm run dev                  # http://localhost:3000
 ```
+````
 
 ### Useful scripts
 
 - `npm test` — Vitest
 - `npm run validate-content` — schema-validate everything in `content/`
 - `npm run lint` / `npm run format:check`
-```
+
+````
 
 - [ ] **Step 2: Commit**
 
 ```bash
 git add README.md
 git commit -m "FS-4: README getting-started section"
-```
+````
 
 ---
 

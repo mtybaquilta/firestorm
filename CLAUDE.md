@@ -28,6 +28,7 @@ Authoritative design: `docs/superpowers/specs/2026-04-24-firestorm-design.md`. R
 ## Open doors (design now, ship later)
 
 Don't close these off:
+
 - Tower upgrades modeled as a graph (linear chains at MVP, multi-path trees later).
 - `movementLayer` on creeps and `targetableLayers` on towers (ground-only at MVP).
 - `runs.input_log` column reserved for future replay verification.

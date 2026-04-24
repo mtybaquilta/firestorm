@@ -10,7 +10,7 @@
 
 Firestorm is a desktop-web, round-based tower defense game in the BloonsTD lineage but with its own identity. Players pick a map and difficulty, place and upgrade towers from a roster of ~10–12 distinct units, defend against ~40 (Easy) or ~60 (Hard) hand-authored waves of discrete creep types, and compete on per-map leaderboards.
 
-It is built as a *real game* with accounts, cloud-saved progress, and a long-term meta-progression ladder (tower unlocks, account-wide passive upgrades, tower XP, achievements, daily challenges, profile level/prestige). The launch (MVP) ships only the core run loop + leaderboards; meta-currency accumulates silently for a future spendable shop.
+It is built as a _real game_ with accounts, cloud-saved progress, and a long-term meta-progression ladder (tower unlocks, account-wide passive upgrades, tower XP, achievements, daily challenges, profile level/prestige). The launch (MVP) ships only the core run loop + leaderboards; meta-currency accumulates silently for a future spendable shop.
 
 **Design pillars**
 
@@ -45,7 +45,7 @@ Towers deal one of several damage types (e.g. physical, magic, fire, ice — exa
 
 ### 2.6 Determinism
 
-All game logic runs on a fixed-timestep simulation with a seeded RNG. Render is decoupled from simulation. No wall-clock or `Math.random()` in gameplay code. Run start records the seed; every player action (place, upgrade, sell, retarget, start-round, target-change) is timestamped against simulation tick. The recording is *captured* at MVP but not yet *used* for verification — the door stays open for future replay/verification.
+All game logic runs on a fixed-timestep simulation with a seeded RNG. Render is decoupled from simulation. No wall-clock or `Math.random()` in gameplay code. Run start records the seed; every player action (place, upgrade, sell, retarget, start-round, target-change) is timestamped against simulation tick. The recording is _captured_ at MVP but not yet _used_ for verification — the door stays open for future replay/verification.
 
 ---
 

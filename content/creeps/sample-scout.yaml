@@ -1,0 +1,9 @@
+id: scout
+name: Scout
+hp: 50
+speed: 80           # pixels per second
+movementLayer: ground
+resistanceClass: light
+bounty: 5
+leakDamage: 1
+abilities: []

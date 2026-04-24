@@ -1,0 +1,24 @@
+id: arrow
+name: Arrow Tower
+cost: 100
+damageType: physical
+targetableLayers: [ground]
+baseStats:
+  damage: 10
+  attackSpeed: 1.0       # attacks per second
+  range: 150             # pixels
+  projectileBehavior: single-target
+targetingDefaults:
+  priority: first        # first | last | strong | close
+upgrades:
+  - id: arrow-1
+    requires: []
+    cost: 80
+    statDeltas:
+      damage: 5
+  - id: arrow-2
+    requires: [arrow-1]
+    cost: 200
+    statDeltas:
+      damage: 10
+      range: 30

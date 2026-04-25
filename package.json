@@ -10,7 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "validate-content": "tsx scripts/validate-content.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",

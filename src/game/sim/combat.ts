@@ -111,14 +111,31 @@ export function resolveCombat(state: SimState, ctx: SimContext): SimState {
   }
 
   const survivors: CreepInstance[] = [];
+  let nextEntityId = state.nextEntityId;
   for (const creep of creeps) {
-    if (creep.hp <= 0) {
-      const def = ctx.registry.creepsById.get(creep.defId);
-      if (def) cash += def.bounty;
+    if (creep.hp > 0) {
+      survivors.push(creep);
       continue;
     }
-    survivors.push(creep);
+    const def = ctx.registry.creepsById.get(creep.defId);
+    if (!def) continue;
+    cash += def.bounty;
+    for (const ability of def.abilities) {
+      if (ability.type !== 'spawnOnDeath') continue;
+      const childDef = ctx.registry.creepsById.get(ability.spawn);
+      if (!childDef) continue;
+      const shieldAbility = childDef.abilities.find((a) => a.type === 'shield');
+      for (let i = 0; i < ability.count; i++) {
+        survivors.push({
+          id: nextEntityId++,
+          defId: ability.spawn,
+          hp: childDef.hp,
+          shieldHp: shieldAbility?.type === 'shield' ? shieldAbility.hp : 0,
+          distance: creep.distance,
+        });
+      }
+    }
   }
 
-  return { ...state, towers, creeps: survivors, cash };
+  return { ...state, towers, creeps: survivors, cash, nextEntityId };
 }

@@ -45,7 +45,7 @@ describe('GameRunner', () => {
   it('applies a placeTower intent before the next tick', async () => {
     const { runner, store, bus } = await setup();
     runner.start();
-    bus.emit('intent:placeTower', { defId: 'arrow', x: 100, y: 100 });
+    bus.emit('intent:placeTower', { defId: 'arrow', x: 100, y: 50 });
     runner.tick(DT);
     expect(runner.getState().towers).toHaveLength(1);
     expect(store.getState().cash).toBe(runner.getState().cash);

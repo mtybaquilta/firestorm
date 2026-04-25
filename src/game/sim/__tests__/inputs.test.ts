@@ -57,6 +57,13 @@ describe('applyInput', () => {
     expect(s.cash).toBe(beforeCash + 126);
   });
 
+  it('placeTower rejects invalid placement (on the path)', async () => {
+    const { ctx, state } = await setup();
+    const next = applyInput(state, ctx, { type: 'placeTower', defId: 'arrow', x: 100, y: 100 });
+    expect(next.towers).toHaveLength(0);
+    expect(next.cash).toBe(state.cash);
+  });
+
   it('startNextRound enqueues the next wave and switches phase', async () => {
     const { ctx, state } = await setup();
     const next = applyInput(state, ctx, { type: 'startNextRound' });

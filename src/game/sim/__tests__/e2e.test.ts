@@ -22,10 +22,10 @@ describe('e2e: scripted single-round run', () => {
       initial,
       ctx,
       actions: [
-        { atTick: 0, input: { type: 'placeTower', defId: 'arrow', x: 100, y: 100 } },
-        { atTick: 0, input: { type: 'placeTower', defId: 'arrow', x: 200, y: 200 } },
-        { atTick: 0, input: { type: 'placeTower', defId: 'arrow', x: 500, y: 300 } },
-        { atTick: 0, input: { type: 'placeTower', defId: 'arrow', x: 700, y: 300 } },
+        { atTick: 0, input: { type: 'placeTower', defId: 'arrow', x: 100, y: 50 } },
+        { atTick: 0, input: { type: 'placeTower', defId: 'arrow', x: 250, y: 200 } },
+        { atTick: 0, input: { type: 'placeTower', defId: 'arrow', x: 500, y: 350 } },
+        { atTick: 0, input: { type: 'placeTower', defId: 'arrow', x: 700, y: 350 } },
         { atTick: 0, input: { type: 'startNextRound' } },
       ],
       maxTicks: 60 * 60,
@@ -53,7 +53,7 @@ describe('e2e: scripted single-round run', () => {
       ctx,
       maxTicks: 60 * 60,
       actions: [
-        { atTick: 0, input: { type: 'placeTower' as const, defId: 'arrow', x: 100, y: 100 } },
+        { atTick: 0, input: { type: 'placeTower' as const, defId: 'arrow', x: 100, y: 50 } },
         { atTick: 5, input: { type: 'startNextRound' as const } },
       ],
     };

@@ -1,4 +1,5 @@
 import type { Tower } from '@/content-loader/schemas';
+import { isValidPlacement } from './placement';
 import { enqueueWave } from './waves';
 import type { SimContext, SimState, TargetingPriority, TowerInstance } from './types';
 import { DT } from './types';
@@ -29,6 +30,7 @@ export function applyInput(state: SimState, ctx: SimContext, input: SimInput): S
       const def = ctx.registry.towersById.get(input.defId);
       if (!def) return state;
       if (state.cash < def.cost) return state;
+      if (!isValidPlacement(state, ctx, input.x, input.y)) return state;
       const tower: TowerInstance = {
         id: state.nextEntityId,
         defId: input.defId,

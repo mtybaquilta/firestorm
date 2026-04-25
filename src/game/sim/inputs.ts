@@ -72,7 +72,7 @@ export function applyInput(state: SimState, ctx: SimContext, input: SimInput): S
       if (!tower) return state;
       const def = ctx.registry.towersById.get(tower.defId);
       if (!def) return state;
-      const refund = Math.floor(totalInvested(tower, def) * 0.7);
+      const refund = Math.round(totalInvested(tower, def) * 0.7);
       return {
         ...state,
         cash: state.cash + refund,

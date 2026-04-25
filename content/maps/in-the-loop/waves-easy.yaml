@@ -3,3 +3,9 @@ waves:
       - { creep: scout, count: 5, spacing: 0.8, delay: 0 }
   - groups:
       - { creep: scout, count: 8, spacing: 0.6, delay: 0 }
+  - groups:
+      - { creep: scout, count: 12, spacing: 0.8, delay: 0 }
+  - groups:
+      - { creep: scout, count: 15, spacing: 0.6, delay: 0 }
+  - groups:
+      - { creep: scout, count: 20, spacing: 0.8, delay: 0 }

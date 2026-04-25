@@ -1,0 +1,9 @@
+id: tank
+name: Tank
+hp: 200
+speed: 30
+movementLayer: ground
+resistanceClass: heavy
+bounty: 25
+leakDamage: 5
+abilities: []

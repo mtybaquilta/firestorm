@@ -11,7 +11,7 @@ function load(file: string) {
 describe('WaveFileSchema', () => {
   it('parses in-the-loop easy waves', () => {
     const data = WaveFileSchema.parse(load('content/maps/in-the-loop/waves-easy.yaml'));
-    expect(data.waves.length).toBeGreaterThanOrEqual(2);
+    expect(data.waves).toHaveLength(5);
     expect(data.waves[0].groups[0].creep).toBe('scout');
   });
 

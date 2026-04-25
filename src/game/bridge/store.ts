@@ -10,6 +10,7 @@ export interface HudFields {
   result: SimResult;
   speed: 1 | 2;
   paused: boolean;
+  tick: number;
   selectedDefId: string | null;
   selectedTowerId: number | null;
   revision: number;
@@ -36,6 +37,7 @@ export function createHudStore(): HudStore {
     result: 'in-progress',
     speed: 1,
     paused: false,
+    tick: 0,
     selectedDefId: null,
     selectedTowerId: null,
     revision: 0,

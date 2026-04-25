@@ -91,7 +91,7 @@ export default function PhaserMount({ mapId, difficulty }: PhaserMountProps) {
           className="play-canvas"
           style={{ width: CANVAS_W, height: CANVAS_H }}
         />
-        <RunEnd store={store} />
+        <RunEnd store={store} mapId={mapId} difficulty={difficulty} seed={1} />
       </div>
       {runCtx ? (
         <RunContextProvider value={runCtx}>

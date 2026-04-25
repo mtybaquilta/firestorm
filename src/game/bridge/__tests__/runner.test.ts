@@ -60,6 +60,14 @@ describe('GameRunner', () => {
     expect(runner.getState().tick).toBe(6);
   });
 
+  it('bumps store revision after a tick', async () => {
+    const { runner, store } = await setup();
+    runner.start();
+    const before = store.getState().revision;
+    runner.tick(DT);
+    expect(store.getState().revision).toBeGreaterThan(before);
+  });
+
   it('does not advance while paused', async () => {
     const { runner, bus } = await setup();
     runner.start();

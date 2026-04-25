@@ -126,5 +126,6 @@ export class GameRunner {
     ) {
       prev.setHud(next);
     }
+    prev.bumpRevision();
   }
 }

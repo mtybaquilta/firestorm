@@ -15,7 +15,7 @@ export function step(state: SimState, ctx: SimContext): SimState {
   next = dequeueDueSpawns(next, ctx, seconds);
   next = resolveCombat(next, ctx);
   next = advanceCreeps(next, ctx);
-  next = maybeEndRound(next, ctx);
+  next = maybeEndRound(next);
 
   return next;
 }

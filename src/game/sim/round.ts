@@ -1,6 +1,6 @@
-import type { SimContext, SimState } from './types';
+import type { SimState } from './types';
 
-export function maybeEndRound(state: SimState, _ctx: SimContext): SimState {
+export function maybeEndRound(state: SimState): SimState {
   if (state.phase !== 'in-round') return state;
   if (state.spawnQueue.length > 0) return state;
   if (state.creeps.length > 0) return state;

@@ -45,10 +45,7 @@ export function Hud({ bus, store }: HudProps) {
         >
           Start round
         </button>
-        <button
-          type="button"
-          onClick={() => bus.emit('intent:setPaused', { paused: !hud.paused })}
-        >
+        <button type="button" onClick={() => bus.emit('intent:setPaused', { paused: !hud.paused })}>
           {hud.paused ? 'Resume' : 'Pause'}
         </button>
         <button

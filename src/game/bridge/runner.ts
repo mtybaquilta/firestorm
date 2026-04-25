@@ -48,10 +48,7 @@ export class GameRunner {
   }
 
   private wireBus() {
-    const on = <K extends keyof GameEvents>(
-      key: K,
-      handler: (payload: GameEvents[K]) => void,
-    ) => {
+    const on = <K extends keyof GameEvents>(key: K, handler: (payload: GameEvents[K]) => void) => {
       this.bus.on(key, handler);
       this.subscriptions.push(() => this.bus.off(key, handler));
     };

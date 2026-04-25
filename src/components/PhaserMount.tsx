@@ -74,11 +74,7 @@ export default function PhaserMount() {
 
   return (
     <div className="play-layout">
-      <div
-        ref={parentRef}
-        className="play-canvas"
-        style={{ width: CANVAS_W, height: CANVAS_H }}
-      />
+      <div ref={parentRef} className="play-canvas" style={{ width: CANVAS_W, height: CANVAS_H }} />
       <Hud bus={bus} store={store} />
     </div>
   );

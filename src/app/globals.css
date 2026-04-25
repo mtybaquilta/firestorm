@@ -47,3 +47,75 @@ a {
     color-scheme: dark;
   }
 }
+
+.play-layout {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  align-items: flex-start;
+}
+
+.play-canvas {
+  border: 1px solid #333;
+  background: #000;
+}
+
+.play-hud {
+  min-width: 240px;
+  font-family: system-ui, sans-serif;
+  color: #eee;
+  background: #1f242c;
+  padding: 16px;
+  border: 1px solid #333;
+}
+
+.play-hud h2 {
+  margin: 0 0 8px;
+  font-size: 1.2rem;
+}
+
+.play-hud h3 {
+  margin: 16px 0 8px;
+  font-size: 1rem;
+}
+
+.play-hud dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  margin: 0 0 12px;
+}
+
+.play-hud dt {
+  color: #999;
+}
+
+.play-hud dd {
+  margin: 0;
+}
+
+.play-hud__actions,
+.play-hud__shop {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.play-hud button {
+  background: #2c333d;
+  color: #eee;
+  border: 1px solid #444;
+  padding: 6px 10px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.play-hud button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.play-hud button[aria-pressed='true'] {
+  background: #f2c14e;
+  color: #111;
+}

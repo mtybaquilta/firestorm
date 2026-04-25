@@ -70,9 +70,7 @@ export function UpgradePanel({ bus, store }: UpgradePanelProps) {
         <button
           type="button"
           disabled={ui.cash < next.cost}
-          onClick={() =>
-            bus.emit('intent:upgradeTower', { towerId: tower.id, upgradeId: next.id })
-          }
+          onClick={() => bus.emit('intent:upgradeTower', { towerId: tower.id, upgradeId: next.id })}
         >
           Upgrade ({fmtDeltas(next.statDeltas)}) — ${next.cost}
         </button>

@@ -119,3 +119,134 @@ a {
   background: #f2c14e;
   color: #111;
 }
+
+.map-select {
+  padding: 32px;
+  font-family: system-ui, sans-serif;
+  color: #eee;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.map-select h1 {
+  font-size: 2rem;
+  margin: 0 0 8px;
+}
+
+.map-select__list {
+  list-style: none;
+  padding: 0;
+  margin: 24px 0 0;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.map-select__card {
+  background: #1f242c;
+  border: 1px solid #333;
+  padding: 16px;
+}
+
+.map-select__diffs {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.map-select__btn {
+  background: #2c333d;
+  color: #eee;
+  border: 1px solid #444;
+  padding: 8px 12px;
+  cursor: pointer;
+  text-decoration: none;
+  font: inherit;
+  display: inline-block;
+}
+
+.map-select__btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.play-canvas-wrap {
+  position: relative;
+}
+
+.run-end {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #eee;
+  font-family: system-ui, sans-serif;
+}
+
+.run-end__inner {
+  background: #1f242c;
+  padding: 24px 32px;
+  border: 1px solid #444;
+  text-align: center;
+}
+
+.run-end__inner h2 {
+  margin: 0 0 8px;
+  font-size: 1.5rem;
+}
+
+.run-end__btn {
+  display: inline-block;
+  margin-top: 16px;
+  background: #f2c14e;
+  color: #111;
+  padding: 8px 16px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.upgrade-panel {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #333;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.upgrade-panel h3 {
+  margin: 0 0 4px;
+  font-size: 1rem;
+}
+
+.upgrade-panel dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 12px;
+  margin: 0 0 4px;
+}
+
+.upgrade-panel dt {
+  color: #999;
+}
+
+.upgrade-panel dd {
+  margin: 0;
+}
+
+.upgrade-panel__targeting {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.upgrade-panel__targeting select {
+  flex: 1;
+  background: #2c333d;
+  color: #eee;
+  border: 1px solid #444;
+  padding: 4px 6px;
+  font: inherit;
+}

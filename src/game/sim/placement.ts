@@ -25,12 +25,7 @@ export function distanceToPolyline(point: Point, polyline: Point[]): number {
   return best;
 }
 
-export function isValidPlacement(
-  state: SimState,
-  ctx: SimContext,
-  x: number,
-  y: number,
-): boolean {
+export function isValidPlacement(state: SimState, ctx: SimContext, x: number, y: number): boolean {
   if (distanceToPolyline({ x, y }, ctx.loadedMap.map.path) < MIN_DISTANCE_FROM_PATH) {
     return false;
   }

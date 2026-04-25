@@ -11,11 +11,15 @@ export interface HudFields {
   speed: 1 | 2;
   paused: boolean;
   selectedDefId: string | null;
+  selectedTowerId: number | null;
+  revision: number;
 }
 
 export interface HudActions {
   setHud: (patch: Partial<HudFields>) => void;
   selectDefId: (defId: string | null) => void;
+  selectTowerId: (towerId: number | null) => void;
+  bumpRevision: () => void;
 }
 
 export type HudState = HudFields & HudActions;
@@ -33,7 +37,11 @@ export function createHudStore(): HudStore {
     speed: 1,
     paused: false,
     selectedDefId: null,
+    selectedTowerId: null,
+    revision: 0,
     setHud: (patch) => set(patch),
     selectDefId: (defId) => set({ selectedDefId: defId }),
+    selectTowerId: (towerId) => set({ selectedTowerId: towerId }),
+    bumpRevision: () => set((s) => ({ revision: s.revision + 1 })),
   }));
 }

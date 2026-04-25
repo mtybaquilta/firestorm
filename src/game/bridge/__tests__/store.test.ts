@@ -35,4 +35,19 @@ describe('HudStore', () => {
     store.getState().selectDefId(null);
     expect(store.getState().selectedDefId).toBeNull();
   });
+
+  it('selectTowerId updates the field', () => {
+    const store = createHudStore();
+    store.getState().selectTowerId(7);
+    expect(store.getState().selectedTowerId).toBe(7);
+    store.getState().selectTowerId(null);
+    expect(store.getState().selectedTowerId).toBeNull();
+  });
+
+  it('bumpRevision increments revision', () => {
+    const store = createHudStore();
+    const before = store.getState().revision;
+    store.getState().bumpRevision();
+    expect(store.getState().revision).toBe(before + 1);
+  });
 });

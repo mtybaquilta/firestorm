@@ -23,3 +23,17 @@ This is the stack that will be used to deliver this game.
 ### Economy
 
 ### Gameplay
+
+## Getting started
+
+```bash
+npm install
+cp .env.example .env.local   # fill in Supabase keys when you have them
+npm run dev                  # http://localhost:3000
+```
+
+### Useful scripts
+
+- `npm test` — Vitest
+- `npm run validate-content` — schema-validate everything in `content/`
+- `npm run lint` / `npm run format:check`

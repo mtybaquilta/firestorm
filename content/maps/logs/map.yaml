@@ -1,0 +1,18 @@
+id: logs
+name: Logs
+background: /assets/maps/logs/background.webp
+placementMask: /assets/maps/logs/mask.png
+path:
+  - { x: 0,    y: 200 }
+  - { x: 400,  y: 200 }
+  - { x: 400,  y: 500 }
+  - { x: 800,  y: 500 }
+difficulty:
+  easy:
+    startCash: 650
+    startLives: 100
+    waves: waves-easy.yaml
+  hard:
+    startCash: 500
+    startLives: 60
+    waves: waves-hard.yaml

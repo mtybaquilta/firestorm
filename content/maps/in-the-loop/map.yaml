@@ -1,0 +1,18 @@
+id: in-the-loop
+name: In The Loop
+background: /assets/maps/in-the-loop/background.webp
+placementMask: /assets/maps/in-the-loop/mask.png
+path:
+  - { x: 0,    y: 100 }
+  - { x: 200,  y: 100 }
+  - { x: 200,  y: 300 }
+  - { x: 800,  y: 300 }
+difficulty:
+  easy:
+    startCash: 650
+    startLives: 100
+    waves: waves-easy.yaml
+  hard:
+    startCash: 500
+    startLives: 60
+    waves: waves-hard.yaml

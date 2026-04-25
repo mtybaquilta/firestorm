@@ -24,6 +24,17 @@ export type RunRow = {
 
 export type RunInsert = Omit<RunRow, 'id' | 'created_at'>;
 
+export type LeaderboardEntryRow = {
+  user_id: string;
+  map_id: string;
+  difficulty: Difficulty;
+  rounds_completed: number;
+  lives_remaining: number;
+  duration_seconds: number;
+  run_id: string;
+  updated_at: string;
+};
+
 export type Database = {
   __InternalSupabase: { PostgrestVersion: '12' };
   public: {
@@ -38,6 +49,12 @@ export type Database = {
         Row: RunRow;
         Insert: RunInsert;
         Update: Partial<RunRow>;
+        Relationships: [];
+      };
+      leaderboard_entries: {
+        Row: LeaderboardEntryRow;
+        Insert: LeaderboardEntryRow;
+        Update: Partial<LeaderboardEntryRow>;
         Relationships: [];
       };
     };

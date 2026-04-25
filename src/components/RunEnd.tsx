@@ -28,6 +28,7 @@ export function RunEnd({ store, mapId, difficulty, seed }: RunEndProps) {
   const [submitState, setSubmitState] = useState<'idle' | 'submitting' | 'submitted' | 'error'>(
     'idle',
   );
+  const [placement, setPlacement] = useState<number | null>(null);
 
   useEffect(() => {
     if (hud.result === 'in-progress') return;
@@ -49,7 +50,15 @@ export function RunEnd({ store, mapId, difficulty, seed }: RunEndProps) {
         seed,
       }),
     })
-      .then((r) => setSubmitState(r.ok ? 'submitted' : 'error'))
+      .then(async (r) => {
+        if (!r.ok) {
+          setSubmitState('error');
+          return;
+        }
+        const json = (await r.json().catch(() => null)) as { placement?: number } | null;
+        if (json && typeof json.placement === 'number') setPlacement(json.placement);
+        setSubmitState('submitted');
+      })
       .catch(() => setSubmitState('error'));
   }, [
     hud.result,
@@ -74,7 +83,8 @@ export function RunEnd({ store, mapId, difficulty, seed }: RunEndProps) {
         {session ? (
           <p className="run-end__submit">
             {submitState === 'submitting' && 'Saving run…'}
-            {submitState === 'submitted' && 'Run saved.'}
+            {submitState === 'submitted' &&
+              (placement ? `Run saved. Rank #${placement}.` : 'Run saved.')}
             {submitState === 'error' && 'Could not save run.'}
           </p>
         ) : (
@@ -82,6 +92,9 @@ export function RunEnd({ store, mapId, difficulty, seed }: RunEndProps) {
             <Link href="/auth/sign-in">Sign in</Link> to save runs.
           </p>
         )}
+        <Link href={`/leaderboard/${mapId}/${difficulty}`} className="run-end__btn">
+          Leaderboard
+        </Link>
         <Link href="/" className="run-end__btn">
           Back to maps
         </Link>

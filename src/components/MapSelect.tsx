@@ -20,6 +20,11 @@ export async function MapSelect() {
                 Hard ({wavesHard.waves.length} waves)
               </button>
             </div>
+            <div className="map-select__diffs">
+              <Link href={`/leaderboard/${map.id}/easy`} className="map-select__btn map-select__btn--ghost">
+                Leaderboard
+              </Link>
+            </div>
           </li>
         ))}
       </ul>

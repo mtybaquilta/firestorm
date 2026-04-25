@@ -3,6 +3,8 @@
 import { useSyncExternalStore } from 'react';
 import type { GameEventBus } from '@/game/bridge/events';
 import type { HudStore } from '@/game/bridge/store';
+import { useRunContext } from './RunContext';
+import { UpgradePanel } from './UpgradePanel';
 
 interface HudProps {
   bus: GameEventBus;
@@ -19,6 +21,8 @@ function useHud(store: HudStore) {
 
 export function Hud({ bus, store }: HudProps) {
   const hud = useHud(store);
+  const { registry } = useRunContext();
+  const towers = [...registry.towersById.values()];
 
   return (
     <aside className="play-hud">
@@ -34,8 +38,6 @@ export function Hud({ bus, store }: HudProps) {
         </dd>
         <dt>Phase</dt>
         <dd>{hud.phase}</dd>
-        <dt>Result</dt>
-        <dd>{hud.result}</dd>
       </dl>
       <div className="play-hud__actions">
         <button
@@ -57,16 +59,23 @@ export function Hud({ bus, store }: HudProps) {
       </div>
       <h3>Shop</h3>
       <div className="play-hud__shop">
-        <button
-          type="button"
-          aria-pressed={hud.selectedDefId === 'arrow'}
-          onClick={() =>
-            store.getState().selectDefId(hud.selectedDefId === 'arrow' ? null : 'arrow')
-          }
-        >
-          {hud.selectedDefId === 'arrow' ? 'Cancel' : 'Buy Arrow ($100)'}
-        </button>
+        {towers.map((t) => {
+          const isSelected = hud.selectedDefId === t.id;
+          const canAfford = hud.cash >= t.cost;
+          return (
+            <button
+              key={t.id}
+              type="button"
+              aria-pressed={isSelected}
+              disabled={!isSelected && !canAfford}
+              onClick={() => store.getState().selectDefId(isSelected ? null : t.id)}
+            >
+              {isSelected ? 'Cancel' : `Buy ${t.name} ($${t.cost})`}
+            </button>
+          );
+        })}
       </div>
+      <UpgradePanel bus={bus} store={store} />
     </aside>
   );
 }

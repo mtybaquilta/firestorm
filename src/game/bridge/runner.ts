@@ -25,6 +25,7 @@ function project(state: SimState, prev: HudFields): HudFields {
     result: state.result,
     speed: state.speed,
     paused: state.paused,
+    tick: state.tick,
   };
 }
 
@@ -122,7 +123,8 @@ export class GameRunner {
       prev.phase !== next.phase ||
       prev.result !== next.result ||
       prev.speed !== next.speed ||
-      prev.paused !== next.paused
+      prev.paused !== next.paused ||
+      prev.tick !== next.tick
     ) {
       prev.setHud(next);
     }

@@ -31,10 +31,7 @@ async function readYaml(file: string): Promise<unknown> {
   return yaml.load(await readFile(file, 'utf8'));
 }
 
-async function readDirYaml<T>(
-  dir: string,
-  parse: (raw: unknown, file: string) => T,
-): Promise<T[]> {
+async function readDirYaml<T>(dir: string, parse: (raw: unknown, file: string) => T): Promise<T[]> {
   const entries = await readdir(dir, { withFileTypes: true });
   const files = entries
     .filter((e) => e.isFile() && e.name.endsWith('.yaml'))

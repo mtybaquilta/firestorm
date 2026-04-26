@@ -13,6 +13,9 @@ export const ProjectileBehaviorSchema = z.enum([
   'dot',
   'slow-debuff',
   'support-buff',
+  // Zone damage from a stationary tower — no projectile, no target priority.
+  // Each fire tick damages all creeps within burnRadius around the tower.
+  'zone',
 ]);
 
 const StatDeltasSchema = z
@@ -51,6 +54,12 @@ export const TowerSchema = z
       // Multiplier applied to creep speed (e.g. 0.65 means -35% speed).
       slowMultiplier: z.number().positive().lt(1).optional(),
       slowDurationSec: z.number().positive().optional(),
+      // DoT params: required when projectileBehavior === 'dot'.
+      // Damage values applied at 1-second intervals after impact.
+      dotSchedule: z.array(z.number().nonnegative()).min(1).optional(),
+      // Zone params: required when projectileBehavior === 'zone'. Damage from
+      // baseStats.damage applies to all creeps within burnRadius each fire tick.
+      burnRadius: z.number().positive().optional(),
     }),
     targetingDefaults: z.object({
       priority: TargetingPrioritySchema,
@@ -85,6 +94,24 @@ export const TowerSchema = z
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: 'slow-debuff projectileBehavior requires slowMultiplier and slowDurationSec',
+          path: ['baseStats'],
+        });
+      }
+    }
+    if (stats.projectileBehavior === 'dot') {
+      if (stats.dotSchedule === undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'dot projectileBehavior requires dotSchedule',
+          path: ['baseStats'],
+        });
+      }
+    }
+    if (stats.projectileBehavior === 'zone') {
+      if (stats.burnRadius === undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'zone projectileBehavior requires burnRadius',
           path: ['baseStats'],
         });
       }

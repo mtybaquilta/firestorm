@@ -1,0 +1,24 @@
+id: fire-turret
+name: Fire Turret
+cost: 350
+damageType: physical
+targetableLayers: [ground]
+baseStats:
+  damage: 8               # per fire tick
+  attackSpeed: 2.0        # 2 burn ticks per second -> 16 DPS to creeps in zone
+  range: 60               # zone radius — used for shop ghost / placement preview
+  projectileBehavior: zone
+  burnRadius: 60          # damages every creep within this radius around the tower
+targetingDefaults:
+  priority: first         # ignored for zone behavior, but still required by schema
+upgrades:
+  - id: fire-turret-1
+    requires: []
+    cost: 250
+    statDeltas:
+      damage: 4
+  - id: fire-turret-2
+    requires: [fire-turret-1]
+    cost: 500
+    statDeltas:
+      attackSpeed: 1.0

@@ -1,0 +1,27 @@
+id: poison
+name: Poison Tower
+cost: 250
+damageType: physical
+targetableLayers: [ground]
+baseStats:
+  damage: 1               # token impact damage
+  attackSpeed: 1.0        # attacks per second
+  range: 180              # pixels
+  projectileBehavior: dot
+  projectileSpeed: 500    # pixels per second
+  # 1s tick cadence, flat 10/tick for 5s, then linear decay 8/6/4/2/0 over next 5s.
+  # Re-application by another Poison tower resets the schedule (no magnitude stacking).
+  dotSchedule: [10, 10, 10, 10, 10, 8, 6, 4, 2, 0]
+targetingDefaults:
+  priority: strong
+upgrades:
+  - id: poison-1
+    requires: []
+    cost: 200
+    statDeltas:
+      range: 30
+  - id: poison-2
+    requires: [poison-1]
+    cost: 400
+    statDeltas:
+      attackSpeed: 0.5

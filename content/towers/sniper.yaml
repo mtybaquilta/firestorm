@@ -1,0 +1,25 @@
+id: sniper
+name: Sniper
+cost: 600
+damageType: physical
+targetableLayers: [ground]
+baseStats:
+  damage: 150
+  attackSpeed: 0.5       # one shot every 2s
+  range: 800             # very long, effectively global on MVP maps
+  projectileBehavior: single-target
+  projectileSpeed: 1500  # bullet-fast
+targetingDefaults:
+  priority: strong       # tends to focus heaviest in-range creep
+upgrades:
+  - id: sniper-1
+    requires: []
+    cost: 400
+    statDeltas:
+      damage: 75
+  - id: sniper-2
+    requires: [sniper-1]
+    cost: 800
+    statDeltas:
+      damage: 150
+      attackSpeed: 0.25

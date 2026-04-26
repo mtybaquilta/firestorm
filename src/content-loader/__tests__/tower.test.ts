@@ -42,4 +42,22 @@ describe('TowerSchema', () => {
     };
     expect(() => TowerSchema.parse(bad)).toThrow(/slowMultiplier/);
   });
+
+  it('rejects dot projectile behavior without a dotSchedule', () => {
+    const fixture = loadFixture() as { baseStats: Record<string, unknown> };
+    const bad = {
+      ...fixture,
+      baseStats: { ...fixture.baseStats, projectileBehavior: 'dot' },
+    };
+    expect(() => TowerSchema.parse(bad)).toThrow(/dotSchedule/);
+  });
+
+  it('rejects zone projectile behavior without a burnRadius', () => {
+    const fixture = loadFixture() as { baseStats: Record<string, unknown> };
+    const bad = {
+      ...fixture,
+      baseStats: { ...fixture.baseStats, projectileBehavior: 'zone' },
+    };
+    expect(() => TowerSchema.parse(bad)).toThrow(/burnRadius/);
+  });
 });

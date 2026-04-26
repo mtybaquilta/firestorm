@@ -30,6 +30,15 @@ export interface CreepSlow {
   remainingTicks: number;
 }
 
+// Active damage-over-time effect. Deals next value in `damagesRemaining` every
+// `TICK_HZ` sim ticks. Re-application by another DoT tower of the same type
+// resets the schedule. No magnitude stacking.
+export interface CreepPoison {
+  damagesRemaining: number[];
+  ticksUntilNext: number;
+  damageType: string;
+}
+
 export interface CreepInstance {
   id: number;
   defId: string;
@@ -39,6 +48,7 @@ export interface CreepInstance {
   // Render hook: tick on which the creep last took damage. Renderer flashes briefly.
   lastHitTick?: number;
   slow?: CreepSlow;
+  poison?: CreepPoison;
 }
 
 export interface PendingSpawn {
@@ -55,6 +65,10 @@ export interface ProjectileSplash {
 export interface ProjectileSlow {
   multiplier: number;
   durationTicks: number;
+}
+
+export interface ProjectilePoison {
+  schedule: number[];
 }
 
 export interface ProjectileInstance {
@@ -74,6 +88,7 @@ export interface ProjectileInstance {
   // don't retroactively affect resolution.
   splash?: ProjectileSplash;
   slow?: ProjectileSlow;
+  poison?: ProjectilePoison;
 }
 
 export interface SimState {

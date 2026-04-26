@@ -3,6 +3,7 @@ import type {
   CreepInstance,
   CreepSlow,
   ProjectileInstance,
+  ProjectilePoison,
   ProjectileSlow,
   ProjectileSplash,
   SimContext,
@@ -21,6 +22,8 @@ interface EffectiveTowerStats {
   projectileSpeed: number;
   splash?: ProjectileSplash;
   slow?: ProjectileSlow;
+  poison?: ProjectilePoison;
+  burnRadius?: number;
 }
 
 function effectiveStats(tower: TowerInstance, ctx: SimContext): EffectiveTowerStats {
@@ -58,6 +61,11 @@ function effectiveStats(tower: TowerInstance, ctx: SimContext): EffectiveTowerSt
     };
   }
 
+  let poison: ProjectilePoison | undefined;
+  if (def.baseStats.projectileBehavior === 'dot' && def.baseStats.dotSchedule) {
+    poison = { schedule: def.baseStats.dotSchedule };
+  }
+
   return {
     damage,
     attackSpeed,
@@ -65,6 +73,8 @@ function effectiveStats(tower: TowerInstance, ctx: SimContext): EffectiveTowerSt
     projectileSpeed: def.baseStats.projectileSpeed ?? DEFAULT_PROJECTILE_SPEED,
     splash,
     slow,
+    poison,
+    burnRadius: def.baseStats.burnRadius,
   };
 }
 
@@ -139,7 +149,7 @@ function mergeSlow(current: CreepSlow | undefined, incoming: ProjectileSlow): Cr
   return current;
 }
 
-// Apply primary damage, splash damage, and slow effect from a single projectile impact.
+// Apply primary damage, splash damage, slow, and poison from a single projectile impact.
 function applyImpact(
   creeps: CreepInstance[],
   proj: ProjectileInstance,
@@ -154,6 +164,16 @@ function applyImpact(
     if (c.id === primaryTarget.id) {
       next = applyDamage(next, proj.damage, proj.damageType, ctx, tick);
       if (proj.slow) next = { ...next, slow: mergeSlow(next.slow, proj.slow) };
+      if (proj.poison) {
+        next = {
+          ...next,
+          poison: {
+            damagesRemaining: [...proj.poison.schedule],
+            ticksUntilNext: TICK_HZ,
+            damageType: proj.damageType,
+          },
+        };
+      }
       return next;
     }
     if (proj.splash) {
@@ -163,6 +183,36 @@ function applyImpact(
       if (dist <= proj.splash.radius) {
         next = applyDamage(next, proj.damage * proj.splash.ratio, proj.damageType, ctx, tick);
       }
+    }
+    return next;
+  });
+}
+
+// Tick down active poison effects on creeps; apply scheduled damage when due.
+// Returns a fresh creep list with damage and poison state updated.
+function tickPoison(
+  creeps: CreepInstance[],
+  ctx: SimContext,
+  tick: number,
+): CreepInstance[] {
+  return creeps.map((c) => {
+    if (!c.poison) return c;
+    let { damagesRemaining, ticksUntilNext, damageType } = c.poison;
+    ticksUntilNext -= 1;
+    let next = c;
+    if (ticksUntilNext <= 0) {
+      const dmg = damagesRemaining[0] ?? 0;
+      const remaining = damagesRemaining.slice(1);
+      if (dmg > 0) next = applyDamage(next, dmg, damageType, ctx, tick);
+      next = {
+        ...next,
+        poison:
+          remaining.length === 0
+            ? undefined
+            : { damagesRemaining: remaining, ticksUntilNext: TICK_HZ, damageType },
+      };
+    } else {
+      next = { ...next, poison: { damagesRemaining, ticksUntilNext, damageType } };
     }
     return next;
   });
@@ -205,7 +255,9 @@ export function resolveCombat(state: SimState, ctx: SimContext): SimState {
     });
   }
 
-  // === Phase 2: tower fire — spawn new projectiles ===
+  // === Phase 2: tower fire ===
+  // Zone towers (e.g. Fire Turret) damage all creeps in burnRadius each fire tick.
+  // All other behaviors spawn a homing projectile that resolves on impact.
   const towers: TowerInstance[] = [];
   const newProjectiles: ProjectileInstance[] = [];
   for (const tower of state.towers) {
@@ -216,28 +268,50 @@ export function resolveCombat(state: SimState, ctx: SimContext): SimState {
     let lastTargetId = tower.lastTargetId;
 
     if (cooldown <= 0 && towerDef) {
-      const target = pickTarget(tower, stats.range, creeps, ctx);
-      if (target) {
-        const targetPos = positionAtDistance(path, target.distance);
-        newProjectiles.push({
-          id: nextEntityId++,
-          towerDefId: tower.defId,
-          x: tower.x,
-          y: tower.y,
-          targetCreepId: target.id,
-          fallbackX: targetPos.x,
-          fallbackY: targetPos.y,
-          damage: stats.damage,
-          damageType: towerDef.damageType,
-          speed: stats.projectileSpeed,
-          splash: stats.splash,
-          slow: stats.slow,
+      if (towerDef.baseStats.projectileBehavior === 'zone' && stats.burnRadius !== undefined) {
+        const radius = stats.burnRadius;
+        let anyHit = false;
+        creeps = creeps.map((c) => {
+          const cPos = positionAtDistance(path, c.distance);
+          const d = Math.hypot(cPos.x - tower.x, cPos.y - tower.y);
+          if (d <= radius) {
+            anyHit = true;
+            return applyDamage(c, stats.damage, towerDef.damageType, ctx, state.tick);
+          }
+          return c;
         });
-        cooldown = stats.attackSpeed > 0 ? 1 / stats.attackSpeed : Infinity;
-        lastFiredTick = state.tick;
-        lastTargetId = target.id;
+        if (anyHit) {
+          cooldown = stats.attackSpeed > 0 ? 1 / stats.attackSpeed : Infinity;
+          lastFiredTick = state.tick;
+          lastTargetId = null;
+        } else {
+          cooldown = 0;
+        }
       } else {
-        cooldown = 0;
+        const target = pickTarget(tower, stats.range, creeps, ctx);
+        if (target) {
+          const targetPos = positionAtDistance(path, target.distance);
+          newProjectiles.push({
+            id: nextEntityId++,
+            towerDefId: tower.defId,
+            x: tower.x,
+            y: tower.y,
+            targetCreepId: target.id,
+            fallbackX: targetPos.x,
+            fallbackY: targetPos.y,
+            damage: stats.damage,
+            damageType: towerDef.damageType,
+            speed: stats.projectileSpeed,
+            splash: stats.splash,
+            slow: stats.slow,
+            poison: stats.poison,
+          });
+          cooldown = stats.attackSpeed > 0 ? 1 / stats.attackSpeed : Infinity;
+          lastFiredTick = state.tick;
+          lastTargetId = target.id;
+        } else {
+          cooldown = 0;
+        }
       }
     }
 
@@ -248,6 +322,9 @@ export function resolveCombat(state: SimState, ctx: SimContext): SimState {
       lastTargetId,
     });
   }
+
+  // === Phase 2.5: tick active DoT effects on creeps ===
+  creeps = tickPoison(creeps, ctx, state.tick);
 
   // === Phase 3: resolve creep deaths (bounty + spawn-on-death) ===
   const survivors: CreepInstance[] = [];

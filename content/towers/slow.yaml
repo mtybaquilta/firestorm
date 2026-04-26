@@ -1,0 +1,26 @@
+id: slow
+name: Slow Tower
+cost: 200
+damageType: physical
+targetableLayers: [ground]
+baseStats:
+  damage: 1             # token damage
+  attackSpeed: 1.5      # attacks per second
+  range: 130            # pixels
+  projectileBehavior: slow-debuff
+  projectileSpeed: 700  # pixels per second
+  slowMultiplier: 0.65  # -35% movement speed
+  slowDurationSec: 2.0  # seconds, refreshed on hit
+targetingDefaults:
+  priority: first
+upgrades:
+  - id: slow-1
+    requires: []
+    cost: 150
+    statDeltas:
+      range: 20
+  - id: slow-2
+    requires: [slow-1]
+    cost: 300
+    statDeltas:
+      attackSpeed: 0.5

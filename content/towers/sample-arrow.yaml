@@ -8,6 +8,7 @@ baseStats:
   attackSpeed: 1.0       # attacks per second
   range: 150             # pixels
   projectileBehavior: single-target
+  projectileSpeed: 600   # pixels per second
 targetingDefaults:
   priority: first        # first | last | strong | close
 upgrades:

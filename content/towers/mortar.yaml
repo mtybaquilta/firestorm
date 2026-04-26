@@ -1,0 +1,27 @@
+id: mortar
+name: Mortar
+cost: 275
+damageType: physical
+targetableLayers: [ground]
+baseStats:
+  damage: 20
+  attackSpeed: 0.7      # attacks per second
+  range: 200            # pixels
+  projectileBehavior: splash
+  projectileSpeed: 450  # pixels per second
+  splashRadius: 80      # pixels around primary target
+  splashRatio: 0.25     # 25% of damage to other creeps in radius
+targetingDefaults:
+  priority: first
+upgrades:
+  - id: mortar-1
+    requires: []
+    cost: 200
+    statDeltas:
+      damage: 10
+  - id: mortar-2
+    requires: [mortar-1]
+    cost: 350
+    statDeltas:
+      damage: 15
+      range: 30

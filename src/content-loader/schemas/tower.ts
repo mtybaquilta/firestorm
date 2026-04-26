@@ -42,6 +42,15 @@ export const TowerSchema = z
       attackSpeed: z.number().positive(),
       range: z.number().positive(),
       projectileBehavior: ProjectileBehaviorSchema,
+      // Pixels per second. Optional in YAML; sim applies a default if omitted.
+      projectileSpeed: z.number().positive().optional(),
+      // Splash params: required when projectileBehavior === 'splash'.
+      splashRadius: z.number().positive().optional(),
+      splashRatio: z.number().min(0).max(1).optional(),
+      // Slow-debuff params: required when projectileBehavior === 'slow-debuff'.
+      // Multiplier applied to creep speed (e.g. 0.65 means -35% speed).
+      slowMultiplier: z.number().positive().lt(1).optional(),
+      slowDurationSec: z.number().positive().optional(),
     }),
     targetingDefaults: z.object({
       priority: TargetingPrioritySchema,
@@ -59,6 +68,25 @@ export const TowerSchema = z
             path: ['upgrades'],
           });
         }
+      }
+    }
+    const stats = tower.baseStats;
+    if (stats.projectileBehavior === 'splash') {
+      if (stats.splashRadius === undefined || stats.splashRatio === undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'splash projectileBehavior requires splashRadius and splashRatio',
+          path: ['baseStats'],
+        });
+      }
+    }
+    if (stats.projectileBehavior === 'slow-debuff') {
+      if (stats.slowMultiplier === undefined || stats.slowDurationSec === undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'slow-debuff projectileBehavior requires slowMultiplier and slowDurationSec',
+          path: ['baseStats'],
+        });
       }
     }
   });

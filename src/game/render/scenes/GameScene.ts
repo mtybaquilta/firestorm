@@ -21,6 +21,46 @@ const COLOR_CREEP_MAGICAL = 0x6492c9;
 const COLOR_GHOST = 0xffffff;
 const COLOR_GHOST_INVALID = 0xff5555;
 const COLOR_TOWER_SELECTED = 0xffffff;
+const COLOR_HIT_FLASH = 0xffffff;
+const HIT_FLASH_TICKS = 6; // ~100ms at 60Hz
+
+// archer.png: 1536×2048, 3 cols × 4 rows, 512×512 per frame, RGBA
+// Row 0: back, Row 1: right, Row 2: front, Row 3: left
+// Cols: idle, draw, shoot
+const ARCHER_FRAME = 512;
+const ARCHER_COLS = 3;
+const ARCHER_FRONT_IDLE = 6; // row 2, col 0
+const ARCHER_FRONT_DRAW = 7;
+const ARCHER_FRONT_SHOOT = 8;
+
+// projectiles.png: 2048×512, 4 cols × 1 row, 512×512 per frame, RGBA
+// Frame 0: arrow, 1: bullet, 2: bomb, 3: ice shard
+const PROJECTILE_FRAME = 512;
+const PROJECTILE_ARROW = 0;
+
+const TOWER_SPRITE_DISPLAY_SIZE = 56;
+const PROJECTILE_DISPLAY_SIZE = 28;
+
+interface TowerSpriteEntry {
+  sprite: Phaser.GameObjects.Sprite;
+  lastFiredTick: number;
+}
+
+interface TowerSpriteConfig {
+  textureKey: string;
+  idleFrame: number;
+  attackAnimKey: string;
+  projectileFrame: number;
+}
+
+const TOWER_SPRITE_MAP: Record<string, TowerSpriteConfig> = {
+  arrow: {
+    textureKey: 'archer',
+    idleFrame: ARCHER_FRONT_IDLE,
+    attackAnimKey: 'archer-attack',
+    projectileFrame: PROJECTILE_ARROW,
+  },
+};
 
 export class GameScene extends Phaser.Scene {
   private readonly runner: GameRunner;
@@ -29,6 +69,8 @@ export class GameScene extends Phaser.Scene {
 
   private graphics!: Phaser.GameObjects.Graphics;
   private ghost!: Phaser.GameObjects.Graphics;
+  private towerSprites = new Map<number, TowerSpriteEntry>();
+  private projectileSprites = new Map<number, Phaser.GameObjects.Image>();
 
   constructor(init: GameSceneInit) {
     super('GameScene');
@@ -37,9 +79,29 @@ export class GameScene extends Phaser.Scene {
     this.store = init.store;
   }
 
+  preload() {
+    this.load.spritesheet('archer', '/assets/archer.png', {
+      frameWidth: ARCHER_FRAME,
+      frameHeight: ARCHER_FRAME,
+    });
+    this.load.spritesheet('projectiles', '/assets/projectiles.png', {
+      frameWidth: PROJECTILE_FRAME,
+      frameHeight: PROJECTILE_FRAME,
+    });
+  }
+
   create() {
     this.graphics = this.add.graphics();
     this.ghost = this.add.graphics();
+
+    this.anims.create({
+      key: 'archer-attack',
+      frames: this.anims.generateFrameNumbers('archer', {
+        frames: [ARCHER_FRONT_DRAW, ARCHER_FRONT_SHOOT, ARCHER_FRONT_IDLE],
+      }),
+      frameRate: 12,
+      repeat: 0,
+    });
 
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
       const ui = this.store.getState();
@@ -70,7 +132,70 @@ export class GameScene extends Phaser.Scene {
   }
 
   update() {
+    this.syncTowerSprites();
+    this.syncProjectiles();
     this.draw();
+  }
+
+  private syncTowerSprites() {
+    const state = this.runner.getState();
+    const liveIds = new Set(state.towers.map((t) => t.id));
+
+    for (const [id, entry] of this.towerSprites) {
+      if (!liveIds.has(id)) {
+        entry.sprite.destroy();
+        this.towerSprites.delete(id);
+      }
+    }
+
+    for (const tower of state.towers) {
+      const config = TOWER_SPRITE_MAP[tower.defId];
+      if (!config) continue;
+
+      let entry = this.towerSprites.get(tower.id);
+      if (!entry) {
+        const sprite = this.add.sprite(tower.x, tower.y, config.textureKey, config.idleFrame);
+        sprite.setDisplaySize(TOWER_SPRITE_DISPLAY_SIZE, TOWER_SPRITE_DISPLAY_SIZE);
+        entry = { sprite, lastFiredTick: tower.lastFiredTick ?? 0 };
+        this.towerSprites.set(tower.id, entry);
+      }
+
+      const fired = (tower.lastFiredTick ?? 0) > entry.lastFiredTick;
+      if (fired) {
+        entry.lastFiredTick = tower.lastFiredTick ?? 0;
+        entry.sprite.play(config.attackAnimKey, true);
+      }
+    }
+  }
+
+  // Mirror sim projectiles 1:1 — sim is authoritative for position and lifetime.
+  private syncProjectiles() {
+    const state = this.runner.getState();
+    const liveIds = new Set(state.projectiles.map((p) => p.id));
+
+    for (const [id, sprite] of this.projectileSprites) {
+      if (!liveIds.has(id)) {
+        sprite.destroy();
+        this.projectileSprites.delete(id);
+      }
+    }
+
+    for (const proj of state.projectiles) {
+      const config = TOWER_SPRITE_MAP[proj.towerDefId];
+      if (!config) continue;
+
+      let sprite = this.projectileSprites.get(proj.id);
+      if (!sprite) {
+        sprite = this.add.image(proj.x, proj.y, 'projectiles', config.projectileFrame);
+        sprite.setDisplaySize(PROJECTILE_DISPLAY_SIZE, PROJECTILE_DISPLAY_SIZE);
+        this.projectileSprites.set(proj.id, sprite);
+      }
+
+      const dx = proj.x - sprite.x;
+      const dy = proj.y - sprite.y;
+      sprite.setPosition(proj.x, proj.y);
+      if (dx !== 0 || dy !== 0) sprite.setRotation(Math.atan2(dy, dx));
+    }
   }
 
   private draw() {
@@ -95,17 +220,24 @@ export class GameScene extends Phaser.Scene {
       const range = def?.baseStats.range ?? 0;
       g.lineStyle(1, COLOR_RANGE, 0.25);
       g.strokeCircle(tower.x, tower.y, range);
-      g.fillStyle(COLOR_TOWER, 1);
-      g.fillRect(tower.x - 12, tower.y - 12, 24, 24);
+
+      if (!this.towerSprites.has(tower.id)) {
+        g.fillStyle(COLOR_TOWER, 1);
+        g.fillRect(tower.x - 12, tower.y - 12, 24, 24);
+      }
+
       if (tower.id === selectedTowerId) {
+        const half = TOWER_SPRITE_DISPLAY_SIZE / 2 + 1;
         g.lineStyle(2, COLOR_TOWER_SELECTED, 1);
-        g.strokeRect(tower.x - 13, tower.y - 13, 26, 26);
+        g.strokeRect(tower.x - half, tower.y - half, half * 2, half * 2);
       }
     }
 
     for (const creep of state.creeps) {
       const pos = positionAtDistance(path, creep.distance);
-      g.fillStyle(colorForCreep(creep.defId), 1);
+      const recentlyHit =
+        creep.lastHitTick !== undefined && state.tick - creep.lastHitTick < HIT_FLASH_TICKS;
+      g.fillStyle(recentlyHit ? COLOR_HIT_FLASH : colorForCreep(creep.defId), 1);
       g.fillCircle(pos.x, pos.y, 10);
     }
 

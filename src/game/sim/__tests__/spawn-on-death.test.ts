@@ -32,7 +32,11 @@ describe('spawnOnDeath', () => {
     });
     state.creeps.push({ id: 2, defId: 'boss', hp: 1, shieldHp: 0, distance: 50 });
 
-    const next = resolveCombat(state, ctx);
+    // Damage now applies on projectile impact, not on fire — step until settled.
+    let next = resolveCombat(state, ctx);
+    for (let i = 0; i < 60 && next.projectiles.length > 0; i++) {
+      next = resolveCombat(next, ctx);
+    }
     const spawned = next.creeps.filter((c) => c.defId === 'scout');
     expect(spawned).toHaveLength(2);
     for (const c of spawned) expect(c.distance).toBe(50);

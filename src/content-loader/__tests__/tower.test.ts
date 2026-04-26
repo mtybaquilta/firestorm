@@ -24,4 +24,22 @@ describe('TowerSchema', () => {
     };
     expect(() => TowerSchema.parse(bad)).toThrow();
   });
+
+  it('rejects splash projectile behavior without splash params', () => {
+    const fixture = loadFixture() as { baseStats: Record<string, unknown> };
+    const bad = {
+      ...fixture,
+      baseStats: { ...fixture.baseStats, projectileBehavior: 'splash' },
+    };
+    expect(() => TowerSchema.parse(bad)).toThrow(/splashRadius/);
+  });
+
+  it('rejects slow-debuff projectile behavior without slow params', () => {
+    const fixture = loadFixture() as { baseStats: Record<string, unknown> };
+    const bad = {
+      ...fixture,
+      baseStats: { ...fixture.baseStats, projectileBehavior: 'slow-debuff' },
+    };
+    expect(() => TowerSchema.parse(bad)).toThrow(/slowMultiplier/);
+  });
 });

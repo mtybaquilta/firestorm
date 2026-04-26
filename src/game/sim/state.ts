@@ -29,6 +29,7 @@ export function createInitialState({ ctx, difficulty, seed }: InitialStateInput)
     towers: [],
     creeps: [],
     spawnQueue: [],
+    projectiles: [],
     nextEntityId: 1,
   };
 }

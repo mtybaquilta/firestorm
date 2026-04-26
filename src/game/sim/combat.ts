@@ -1,16 +1,31 @@
 import { positionAtDistance } from './path';
-import type { CreepInstance, SimContext, SimState, TowerInstance } from './types';
-import { DT } from './types';
+import type {
+  CreepInstance,
+  CreepSlow,
+  ProjectileInstance,
+  ProjectileSlow,
+  ProjectileSplash,
+  SimContext,
+  SimState,
+  TowerInstance,
+} from './types';
+import { DT, TICK_HZ } from './types';
+
+const DEFAULT_PROJECTILE_SPEED = 600;
+const PROJECTILE_HIT_RADIUS = 8;
 
 interface EffectiveTowerStats {
   damage: number;
   attackSpeed: number;
   range: number;
+  projectileSpeed: number;
+  splash?: ProjectileSplash;
+  slow?: ProjectileSlow;
 }
 
 function effectiveStats(tower: TowerInstance, ctx: SimContext): EffectiveTowerStats {
   const def = ctx.registry.towersById.get(tower.defId);
-  if (!def) return { damage: 0, attackSpeed: 1, range: 0 };
+  if (!def) return { damage: 0, attackSpeed: 1, range: 0, projectileSpeed: DEFAULT_PROJECTILE_SPEED };
   let damage = def.baseStats.damage;
   let attackSpeed = def.baseStats.attackSpeed;
   let range = def.baseStats.range;
@@ -21,7 +36,36 @@ function effectiveStats(tower: TowerInstance, ctx: SimContext): EffectiveTowerSt
     if (upgrade.statDeltas.attackSpeed !== undefined) attackSpeed += upgrade.statDeltas.attackSpeed;
     if (upgrade.statDeltas.range !== undefined) range += upgrade.statDeltas.range;
   }
-  return { damage, attackSpeed, range };
+
+  let splash: ProjectileSplash | undefined;
+  if (
+    def.baseStats.projectileBehavior === 'splash' &&
+    def.baseStats.splashRadius !== undefined &&
+    def.baseStats.splashRatio !== undefined
+  ) {
+    splash = { radius: def.baseStats.splashRadius, ratio: def.baseStats.splashRatio };
+  }
+
+  let slow: ProjectileSlow | undefined;
+  if (
+    def.baseStats.projectileBehavior === 'slow-debuff' &&
+    def.baseStats.slowMultiplier !== undefined &&
+    def.baseStats.slowDurationSec !== undefined
+  ) {
+    slow = {
+      multiplier: def.baseStats.slowMultiplier,
+      durationTicks: Math.round(def.baseStats.slowDurationSec * TICK_HZ),
+    };
+  }
+
+  return {
+    damage,
+    attackSpeed,
+    range,
+    projectileSpeed: def.baseStats.projectileSpeed ?? DEFAULT_PROJECTILE_SPEED,
+    splash,
+    slow,
+  };
 }
 
 function pickTarget(
@@ -70,6 +114,7 @@ function applyDamage(
   rawDamage: number,
   damageType: string,
   ctx: SimContext,
+  tick: number,
 ): CreepInstance {
   const def = ctx.registry.creepsById.get(creep.defId);
   if (!def) return creep;
@@ -82,36 +127,131 @@ function applyDamage(
     shieldHp -= absorbed;
     remaining -= absorbed;
   }
-  return { ...creep, shieldHp, hp: creep.hp - remaining };
+  return { ...creep, shieldHp, hp: creep.hp - remaining, lastHitTick: tick };
+}
+
+// Strongest-wins slow stacking. Re-applying same-or-stronger refreshes duration;
+// weaker is ignored. (Lower multiplier = stronger debuff.)
+function mergeSlow(current: CreepSlow | undefined, incoming: ProjectileSlow): CreepSlow {
+  if (!current || incoming.multiplier <= current.multiplier) {
+    return { multiplier: incoming.multiplier, remainingTicks: incoming.durationTicks };
+  }
+  return current;
+}
+
+// Apply primary damage, splash damage, and slow effect from a single projectile impact.
+function applyImpact(
+  creeps: CreepInstance[],
+  proj: ProjectileInstance,
+  primaryTarget: CreepInstance,
+  ctx: SimContext,
+  path: SimContext['loadedMap']['map']['path'],
+  tick: number,
+): CreepInstance[] {
+  let primaryPos: { x: number; y: number } | null = null;
+  return creeps.map((c) => {
+    let next = c;
+    if (c.id === primaryTarget.id) {
+      next = applyDamage(next, proj.damage, proj.damageType, ctx, tick);
+      if (proj.slow) next = { ...next, slow: mergeSlow(next.slow, proj.slow) };
+      return next;
+    }
+    if (proj.splash) {
+      if (!primaryPos) primaryPos = positionAtDistance(path, primaryTarget.distance);
+      const cPos = positionAtDistance(path, c.distance);
+      const dist = Math.hypot(cPos.x - primaryPos.x, cPos.y - primaryPos.y);
+      if (dist <= proj.splash.radius) {
+        next = applyDamage(next, proj.damage * proj.splash.ratio, proj.damageType, ctx, tick);
+      }
+    }
+    return next;
+  });
 }
 
 export function resolveCombat(state: SimState, ctx: SimContext): SimState {
   let creeps: CreepInstance[] = state.creeps.map((c) => ({ ...c }));
-  const towers: TowerInstance[] = [];
-  let cash = state.cash;
+  let nextEntityId = state.nextEntityId;
+  const path = ctx.loadedMap.map.path;
 
+  // === Phase 1: advance existing projectiles, apply impact on hit ===
+  const survivingProjectiles: ProjectileInstance[] = [];
+  for (const proj of state.projectiles) {
+    const target = creeps.find((c) => c.id === proj.targetCreepId);
+    let tx: number;
+    let ty: number;
+    if (target) {
+      const pos = positionAtDistance(path, target.distance);
+      tx = pos.x;
+      ty = pos.y;
+    } else {
+      tx = proj.fallbackX;
+      ty = proj.fallbackY;
+    }
+
+    const dx = tx - proj.x;
+    const dy = ty - proj.y;
+    const dist = Math.hypot(dx, dy);
+    const stepDist = proj.speed * DT;
+
+    if (dist <= PROJECTILE_HIT_RADIUS || stepDist >= dist) {
+      if (target) creeps = applyImpact(creeps, proj, target, ctx, path, state.tick);
+      continue; // despawn
+    }
+
+    survivingProjectiles.push({
+      ...proj,
+      x: proj.x + (dx / dist) * stepDist,
+      y: proj.y + (dy / dist) * stepDist,
+    });
+  }
+
+  // === Phase 2: tower fire — spawn new projectiles ===
+  const towers: TowerInstance[] = [];
+  const newProjectiles: ProjectileInstance[] = [];
   for (const tower of state.towers) {
     const towerDef = ctx.registry.towersById.get(tower.defId);
     const stats = effectiveStats(tower, ctx);
     let cooldown = tower.cooldownRemaining - DT;
+    let lastFiredTick = tower.lastFiredTick;
+    let lastTargetId = tower.lastTargetId;
 
     if (cooldown <= 0 && towerDef) {
       const target = pickTarget(tower, stats.range, creeps, ctx);
       if (target) {
-        creeps = creeps.map((c) =>
-          c.id === target.id ? applyDamage(c, stats.damage, towerDef.damageType, ctx) : c,
-        );
+        const targetPos = positionAtDistance(path, target.distance);
+        newProjectiles.push({
+          id: nextEntityId++,
+          towerDefId: tower.defId,
+          x: tower.x,
+          y: tower.y,
+          targetCreepId: target.id,
+          fallbackX: targetPos.x,
+          fallbackY: targetPos.y,
+          damage: stats.damage,
+          damageType: towerDef.damageType,
+          speed: stats.projectileSpeed,
+          splash: stats.splash,
+          slow: stats.slow,
+        });
         cooldown = stats.attackSpeed > 0 ? 1 / stats.attackSpeed : Infinity;
+        lastFiredTick = state.tick;
+        lastTargetId = target.id;
       } else {
         cooldown = 0;
       }
     }
 
-    towers.push({ ...tower, cooldownRemaining: Math.max(cooldown, 0) });
+    towers.push({
+      ...tower,
+      cooldownRemaining: Math.max(cooldown, 0),
+      lastFiredTick,
+      lastTargetId,
+    });
   }
 
+  // === Phase 3: resolve creep deaths (bounty + spawn-on-death) ===
   const survivors: CreepInstance[] = [];
-  let nextEntityId = state.nextEntityId;
+  let cash = state.cash;
   for (const creep of creeps) {
     if (creep.hp > 0) {
       survivors.push(creep);
@@ -137,5 +277,12 @@ export function resolveCombat(state: SimState, ctx: SimContext): SimState {
     }
   }
 
-  return { ...state, towers, creeps: survivors, cash, nextEntityId };
+  return {
+    ...state,
+    towers,
+    creeps: survivors,
+    projectiles: [...survivingProjectiles, ...newProjectiles],
+    cash,
+    nextEntityId,
+  };
 }

@@ -17,6 +17,17 @@ export interface TowerInstance {
   upgrades: string[];
   targeting: TargetingPriority;
   cooldownRemaining: number;
+  // Render-side hooks for firing animation / projectile spawning.
+  // Default to 0 / null on tower creation; updated by combat when the tower fires.
+  lastFiredTick?: number;
+  lastTargetId?: number | null;
+}
+
+// Active movement debuff. Strongest wins (lowest multiplier overrides higher);
+// reapplying same-or-stronger refreshes duration. Decremented in advanceCreeps.
+export interface CreepSlow {
+  multiplier: number; // 0..1, applied to base speed (e.g. 0.65 = -35% speed)
+  remainingTicks: number;
 }
 
 export interface CreepInstance {
@@ -25,12 +36,44 @@ export interface CreepInstance {
   hp: number;
   shieldHp: number;
   distance: number;
+  // Render hook: tick on which the creep last took damage. Renderer flashes briefly.
+  lastHitTick?: number;
+  slow?: CreepSlow;
 }
 
 export interface PendingSpawn {
   defId: string;
   spawnAt: number;
   startDistance: number;
+}
+
+export interface ProjectileSplash {
+  radius: number;
+  ratio: number; // fraction of damage applied to non-primary creeps in radius
+}
+
+export interface ProjectileSlow {
+  multiplier: number;
+  durationTicks: number;
+}
+
+export interface ProjectileInstance {
+  id: number;
+  towerDefId: string;
+  x: number;
+  y: number;
+  // Target the projectile is homing on. If the creep is gone, projectile flies
+  // to fallback position and despawns without damage.
+  targetCreepId: number;
+  fallbackX: number;
+  fallbackY: number;
+  damage: number;
+  damageType: string;
+  speed: number;
+  // Optional impact effects, captured at fire time so mid-flight stat changes
+  // don't retroactively affect resolution.
+  splash?: ProjectileSplash;
+  slow?: ProjectileSlow;
 }
 
 export interface SimState {
@@ -50,6 +93,7 @@ export interface SimState {
   towers: TowerInstance[];
   creeps: CreepInstance[];
   spawnQueue: PendingSpawn[];
+  projectiles: ProjectileInstance[];
   nextEntityId: number;
 }
 
